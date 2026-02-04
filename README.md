@@ -147,10 +147,6 @@ skill-security-audit/
 4. Push to the branch (`git push origin feature/new-rule`)
 5. Create a Pull Request
 
-### Security
-
-If you discover a security vulnerability within this project, please send an email to yang.liu.fly@gmail.com. All security vulnerabilities will be promptly addressed.
-
 ### License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -307,10 +303,6 @@ skill-security-audit/
 3. 提交更改 (`git commit -am '添加新安全规则'`)
 4. 推送到分支 (`git push origin feature/new-rule`)
 5. 创建 Pull Request
-
-### 安全
-
-如果您发现本项目中的安全漏洞，请发送邮件至 yang.liu.fly@gmail.com。所有安全漏洞将及时得到处理。
 
 ### 许可证
 
