@@ -1,0 +1,143 @@
+rules:
+  # ==================== Critical Risk Patterns ====================
+
+  - id: python-eval-usage
+    name: Eval Usage
+    description: Use of eval() allows arbitrary code execution
+    severity: critical
+    pattern: 'eval\s*\('
+    languages: [python]
+    message: "eval() executes arbitrary code - extremely dangerous"
+    recommendation: "Use ast.literal_eval() for safe parsing, or proper serialization"
+    example_dangerous: |
+      result = eval(user_input)
+    example_safe: |
+      import ast
+      result = ast.literal_eval(user_input)
+
+  - id: python-exec-usage
+    name: Exec Usage
+    description: Use of exec() allows arbitrary code execution
+    severity: critical
+    pattern: 'exec\s*\('
+    languages: [python]
+    message: "exec() executes arbitrary code - extremely dangerous"
+    recommendation: "Avoid exec entirely; use proper code organization"
+
+  - id: python-pickle-loads
+    name: Pickle Deserialization
+    description: pickle.loads() can execute arbitrary code during deserialization
+    severity: critical
+    pattern: 'pickle\.loads?\s*\('
+    languages: [python]
+    message: "pickle can execute arbitrary code during deserialization"
+    recommendation: "Use JSON for safe serialization, or verify pickle data cryptographically"
+
+  - id: python-yaml-unsafe
+    name: YAML Unsafe Load
+    description: yaml.unsafe_load() can execute arbitrary code
+    severity: critical
+    pattern: 'yaml\.unsafe_load|yaml\.load\s*\([^)]*Loader\s*=\s*yaml\.UnsafeLoader'
+    languages: [python]
+    message: "Unsafe YAML loading can execute arbitrary code"
+    recommendation: "Always use yaml.safe_load() instead"
+
+  # ==================== High Risk Patterns ====================
+
+  - id: python-subprocess-shell
+    name: Subprocess with Shell=True
+    description: subprocess calls with shell=True are vulnerable to command injection
+    severity: high
+    pattern: 'subprocess\.(call|run|Popen)\s*\([^)]*shell\s*=\s*True'
+    languages: [python]
+    message: "shell=True enables command injection attacks"
+    recommendation: "Use shell=False and pass command as list of arguments"
+    example_dangerous: |
+      subprocess.call(f"ls {user_input}", shell=True)
+    example_safe: |
+      subprocess.call(["ls", user_input], shell=False)
+
+  - id: python-os-system
+    name: OS System Call
+    description: os.system() is vulnerable to command injection
+    severity: high
+    pattern: 'os\.system\s*\('
+    languages: [python]
+    message: "os.system() passes commands to shell - command injection risk"
+    recommendation: "Use subprocess module with proper argument handling"
+
+  - id: python-input-no-validation
+    name: Unvalidated User Input
+    description: User input used directly in sensitive operations without validation
+    severity: high
+    pattern: '(input|sys\.argv\[|request\.args\.get)\([^)]*\).*\n.*(?:exec|eval|system|subprocess)'
+    languages: [python]
+    message: "User input flows directly to dangerous functions"
+    recommendation: "Always validate and sanitize user input before use"
+
+  # ==================== Medium Risk Patterns ====================
+
+  - id: python-dynamic-import
+    name: Dynamic Import
+    description: __import__() with user-controlled input can load malicious modules
+    severity: medium
+    pattern: '__import__\s*\('
+    languages: [python]
+    message: "Dynamic imports can load arbitrary code"
+    recommendation: "Validate module names against allowlist"
+
+  - id: python-getattr-dangerous
+    name: Dangerous Getattr
+    description: getattr() with user-controlled input can access private methods
+    severity: medium
+    pattern: 'getattr\s*\([^,]+,\s*[^)]+\)'
+    languages: [python]
+    message: "getattr() with dynamic names can bypass access controls"
+    recommendation: "Validate attribute names before access"
+
+  - id: python-file-write
+    name: Arbitrary File Write
+    description: Writing to user-controlled paths can overwrite critical files
+    severity: medium
+    pattern: 'open\s*\([^,]+,\s*[\'"][wax]'
+    languages: [python]
+    message: "Writing to arbitrary paths is dangerous"
+    recommendation: "Validate and sanitize file paths, use chroot/jail if possible"
+
+  - id: python-requests-usage
+    name: HTTP Requests to User-Controlled URLs
+    description: Making requests to user-controlled URLs can enable SSRF attacks
+    severity: medium
+    pattern: 'requests\.(get|post|put|delete)\s*\(\s*[^)]+\)'
+    languages: [python]
+    message: "Requests to dynamic URLs can enable SSRF"
+    recommendation: "Validate and whitelist allowed URL patterns"
+
+  # ==================== Low Risk / Informational ====================
+
+  - id: python-hardcoded-secret
+    name: Hardcoded Secret
+    description: Potential hardcoded password, API key, or secret
+    severity: low
+    pattern: '(password|passwd|pwd|secret|key|token)\s*=\s*[\'"][^\'"]+[\'"]'
+    languages: [python]
+    message: "Possible hardcoded credential detected"
+    recommendation: "Use environment variables or secure credential storage"
+
+  - id: python-debug-enabled
+    name: Debug Mode Enabled
+    description: Debug mode or verbose logging may expose sensitive information
+    severity: low
+    pattern: '(debug|verbose)\s*=\s*(True|1)'
+    languages: [python]
+    message: "Debug mode may expose sensitive data"
+    recommendation: "Ensure debug mode is disabled in production"
+
+  - id: python-unsafe-tempfile
+    name: Unsafe Temporary File
+    description: Creating temporary files with predictable names
+    severity: low
+    pattern: 'open\s*\([\'"]/tmp/'
+    languages: [python]
+    message: "Predictable temp file names are vulnerable to race conditions"
+    recommendation: "Use tempfile module for secure temporary files"

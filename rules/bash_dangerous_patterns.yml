@@ -1,0 +1,178 @@
+rules:
+  # ==================== Critical Risk Patterns ====================
+
+  - id: bash-curl-pipe-bash
+    name: Curl Pipe to Bash
+    description: Downloading and executing scripts via curl | bash is extremely dangerous
+    severity: critical
+    pattern: 'curl.*\|\s*(bash|sh)'
+    languages: [bash, sh]
+    message: "Remote code execution via curl | bash - classic supply chain attack vector"
+    recommendation: "Download, verify checksum/signature, then execute - never pipe to shell"
+    example_dangerous: |
+      curl -sSL https://example.com/install.sh | bash
+    example_safe: |
+      curl -sSL -o install.sh https://example.com/install.sh
+      # Verify signature/checksum
+      gpg --verify install.sh.sig
+      chmod +x install.sh
+      ./install.sh
+
+  - id: bash-wget-pipe-sh
+    name: Wget Pipe to Sh
+    description: Downloading and executing scripts via wget | sh is extremely dangerous
+    severity: critical
+    pattern: 'wget.*-O?\s*-?\s*\|\s*(sh|bash)'
+    languages: [bash, sh]
+    message: "Remote code execution via wget | sh - classic supply chain attack vector"
+    recommendation: "Download, verify, then execute - never pipe to shell"
+
+  - id: bash-curl-execute
+    name: Curl Download and Execute
+    description: Downloading scripts and immediately executing them
+    severity: critical
+    pattern: 'curl.*-o?\s*\S+\s*(&&|;|\s*\n)\s*(bash|sh|chmod \+x)'
+    languages: [bash, sh]
+    message: "Download and immediate execution without verification"
+    recommendation: "Always verify downloaded scripts before execution"
+
+  - id: bash-reverse-shell
+    name: Reverse Shell
+    description: Classic reverse shell patterns used for backdoors
+    severity: critical
+    pattern: '(bash -i >&|/dev/tcp/\d+\.\d+\.\d+\.\d+/\d+|nc -e /bin/sh|python.*socket.*connect)'
+    languages: [bash, sh]
+    message: "Reverse shell detected - classic backdoor technique"
+    recommendation: "This is almost certainly malicious - do not execute"
+
+  - id: bash-download-backdoor
+    name: Download and Background Execution
+    description: Downloading binaries and running them in background
+    severity: critical
+    pattern: '(wget|curl).*\.(bin|elf|so).*(&&|;|\n).*(&\s*$|nohup|disown)'
+    languages: [bash, sh]
+    message: "Suspicious binary download and background execution"
+    recommendation: "Likely malware - do not execute"
+
+  # ==================== High Risk Patterns ====================
+
+  - id: bash-eval-user-input
+    name: Eval with User Input
+    description: Using eval with user-controlled input
+    severity: high
+    pattern: 'eval\s+["\']*\$'
+    languages: [bash, sh]
+    message: "eval with variable input allows command injection"
+    recommendation: "Avoid eval; use arrays or case statements instead"
+
+  - id: bash-source-remote
+    name: Source Remote Script
+    description: Sourcing scripts from remote URLs
+    severity: high
+    pattern: 'source\s+\/?\w*\$?\(?(curl|wget|fetch)'
+    languages: [bash, sh]
+    message: "Sourcing remote scripts executes them immediately"
+    recommendation: "Download, verify, then source - never source directly from network"
+
+  - id: bash-command-substitution-dangerous
+    name: Dangerous Command Substitution
+    description: Backticks or $() with user-controlled data
+    severity: high
+    pattern: '`\$[A-Za-z_]+`|\$\(\s*\$[A-Za-z_]+'
+    languages: [bash, sh]
+    message: "Command substitution with variables can lead to injection"
+    recommendation: "Quote all variable expansions, validate input"
+
+  - id: bash-world-writable
+    name: World-Writable Permissions
+    description: Setting overly permissive file permissions
+    severity: high
+    pattern: 'chmod\s+([0-7]*777|[0-7]*666)'
+    languages: [bash, sh]
+    message: "World-writable permissions expose files to all users"
+    recommendation: "Use minimal necessary permissions (e.g., 600, 700)"
+
+  - id: bash-sudo-without-validation
+    name: Sudo Without Validation
+    description: Using sudo without proper input validation
+    severity: high
+    pattern: 'sudo\s+(bash|sh|curl|wget|\$)'
+    languages: [bash, sh]
+    message: "sudo with shell or network tools is dangerous"
+    recommendation: "Validate all arguments, use full paths, avoid shell in sudo"
+
+  # ==================== Medium Risk Patterns ====================
+
+  - id: bash-temp-file-predictable
+    name: Predictable Temporary File
+    description: Creating temp files with predictable names
+    severity: medium
+    pattern: '(>/tmp/|/var/tmp/)[A-Za-z0-9_-]+\$?\d*'
+    languages: [bash, sh]
+    message: "Predictable temp file names are vulnerable to race conditions"
+    recommendation: "Use mktemp for secure temporary file creation"
+
+  - id: bash-unquoted-variables
+    name: Unquoted Variables
+    description: Variables not quoted in sensitive contexts
+    severity: medium
+    pattern: '(echo|rm|mv|cp|cat)\s+\$[A-Za-z_]+\s'
+    languages: [bash, sh]
+    message: "Unquoted variables can cause word splitting and globbing issues"
+    recommendation: "Always quote variable expansions: \"$variable\""
+
+  - id: bash-printf-user-input
+    name: Printf with User Input
+    description: printf with unvalidated user input
+    severity: medium
+    pattern: 'printf\s+["\']*\$'
+    languages: [bash, sh]
+    message: "printf with variables can be exploited for format string attacks"
+    recommendation: "Use printf '%s' \"$variable\" for safe formatting"
+
+  - id: bash-history-ignore
+    name: History Manipulation
+    description: Commands that try to avoid shell history
+    severity: medium
+    pattern: '(unset HISTFILE|HISTFILE=|history -c|\\s+)'
+    languages: [bash, sh]
+    message: "History manipulation may indicate attempt to hide malicious activity"
+    recommendation: "Investigate why command history is being disabled"
+
+  - id: bash-network-tool-usage
+    name: Network Tool Usage
+    description: Use of network tools in scripts
+    severity: medium
+    pattern: '\b(curl|wget|nc|netcat|nmap|telnet|ftp|ssh|scp)\s+'
+    languages: [bash, sh]
+    message: "Network tools may be used for data exfiltration or unauthorized access"
+    recommendation: "Verify all network connections are legitimate and documented"
+
+  # ==================== Low Risk / Informational ====================
+
+  - id: bash-shebang
+    name: Script Shebang
+    description: Script interpreter specification
+    severity: info
+    pattern: '^#!\s*/\w+/\w+'
+    languages: [bash, sh]
+    message: "Script interpreter identified"
+    recommendation: "Ensure interpreter is appropriate and secure"
+
+  - id: bash-set-flags
+    name: Bash Set Flags
+    description: Script behavior flags
+    severity: info
+    pattern: '\bset\s+[-+][euxo]+'
+    languages: [bash, sh]
+    message: "Script execution flags configured"
+    recommendation: "Use 'set -euo pipefail' for safer script execution"
+
+  - id: bash-path-manipulation
+    name: PATH Manipulation
+    description: Modifying PATH environment variable
+    severity: low
+    pattern: '(export\s+)?PATH[=:]'
+    languages: [bash, sh]
+    message: "PATH environment variable is being modified"
+    recommendation: "Verify PATH modifications don't introduce malicious directories"

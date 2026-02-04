@@ -1,0 +1,161 @@
+rules:
+  # ==================== Critical Risk Patterns ====================
+
+  - id: js-eval-usage
+    name: Eval Usage
+    description: Use of eval() allows arbitrary code execution
+    severity: critical
+    pattern: 'eval\s*\('
+    languages: [javascript, typescript]
+    message: "eval() executes arbitrary code - extremely dangerous"
+    recommendation: "Use JSON.parse() for data, never for code execution"
+
+  - id: js-function-constructor
+    name: Function Constructor
+    description: new Function() creates executable code from strings
+    severity: critical
+    pattern: 'new\s+Function\s*\('
+    languages: [javascript, typescript]
+    message: "Function constructor compiles and executes arbitrary code"
+    recommendation: "Avoid entirely; use proper code organization"
+
+  - id: js-settimeout-code-string
+    name: setTimeout/setInterval with Code String
+    description: Passing strings to setTimeout/setInterval executes code
+    severity: critical
+    pattern: '(setTimeout|setInterval)\s*\([^,]+,[\s\'"]+[^\'"]+[\'"]+\)'
+    languages: [javascript, typescript]
+    message: "setTimeout/setInterval with strings executes code like eval()"
+    recommendation: "Always pass functions, never strings"
+
+  - id: js-child-process-exec
+    name: Child Process Exec
+    description: child_process.exec() executes shell commands
+    severity: critical
+    pattern: '(child_process\.)?exec\s*\('
+    languages: [javascript, typescript]
+    message: "exec() passes commands to shell - command injection risk"
+    recommendation: "Use execFile() or spawn() with argument arrays instead"
+
+  - id: js-vm-runincontext
+    name: VM Module Usage
+    description: vm module can escape sandbox with prototype pollution
+    severity: critical
+    pattern: 'vm\.(runInContext|runInNewContext|runInThisContext)'
+    languages: [javascript, typescript]
+    message: "VM module has known sandbox escape vulnerabilities"
+    recommendation: "Use isolated-vm package or avoid executing untrusted code"
+
+  # ==================== High Risk Patterns ====================
+
+  - id: js-child-process-spawn-shell
+    name: Spawn with Shell Option
+    description: spawn() with shell=true enables command injection
+    severity: high
+    pattern: 'spawn\s*\([^)]*shell\s*:\s*true'
+    languages: [javascript, typescript]
+    message: "spawn() with shell:true passes commands to shell"
+    recommendation: "Use shell:false and pass arguments as array"
+
+  - id: js-document-write
+    name: Document Write Usage
+    description: document.write() can lead to XSS vulnerabilities
+    severity: high
+    pattern: 'document\.write\s*\('
+    languages: [javascript, typescript]
+    message: "document.write() with user content enables XSS attacks"
+    recommendation: "Use safe DOM manipulation methods instead"
+
+  - id: js-innerhtml-usage
+    name: InnerHTML Usage
+    description: innerHTML assignment can lead to XSS
+    severity: high
+    pattern: '\.innerHTML\s*='
+    languages: [javascript, typescript]
+    message: "innerHTML with user content enables XSS attacks"
+    recommendation: "Use textContent or safe sanitization libraries"
+
+  - id: js-import-dynamic
+    name: Dynamic Import
+    description: Dynamic imports can load arbitrary modules
+    severity: high
+    pattern: 'import\s*\(\s*[^\'")]+\s*\)'
+    languages: [javascript, typescript]
+    message: "Dynamic imports can load and execute arbitrary code"
+    recommendation: "Validate import paths against allowlist"
+
+  # ==================== Medium Risk Patterns ====================
+
+  - id: js-xmlhttprequest-open
+    name: XMLHttpRequest to Dynamic URL
+    description: XHR requests to user-controlled URLs can enable SSRF
+    severity: medium
+    pattern: 'XMLHttpRequest.*open\s*\(\s*[^,]+,\s*[^\'"]+'
+    languages: [javascript, typescript]
+    message: "XHR with dynamic URLs can enable SSRF attacks"
+    recommendation: "Validate and whitelist allowed URL patterns"
+
+  - id: js-fetch-usage
+    name: Fetch API Usage
+    description: fetch() to user-controlled URLs can enable SSRF
+    severity: medium
+    pattern: 'fetch\s*\(\s*[^\'")]+\s*\)'
+    languages: [javascript, typescript]
+    message: "fetch() with dynamic URLs can enable SSRF attacks"
+    recommendation: "Validate and whitelist allowed URL patterns"
+
+  - id: js-localstorage-usage
+    name: LocalStorage Sensitive Data
+    description: Storing sensitive data in localStorage is insecure
+    severity: medium
+    pattern: 'localStorage\.(setItem|\.\w+\s*=)\s*\([^)]*(token|key|secret|password|auth)'
+    languages: [javascript, typescript]
+    message: "Sensitive data in localStorage is accessible to XSS attacks"
+    recommendation: "Use httpOnly cookies or secure storage mechanisms"
+
+  - id: js-postmessage-usage
+    name: PostMessage Without Origin Check
+    description: postMessage without origin validation is vulnerable
+    severity: medium
+    pattern: 'postMessage\s*\([^)]+\)'
+    languages: [javascript, typescript]
+    message: "postMessage without origin check enables XSS via message injection"
+    recommendation: "Always validate event.origin before processing messages"
+
+  # ==================== Low Risk / Informational ====================
+
+  - id: js-console-usage
+    name: Console Output
+    description: Console logging may expose sensitive information
+    severity: low
+    pattern: 'console\.(log|warn|error|debug)\s*\([^)]+\$(password|token|secret|key)'
+    languages: [javascript, typescript]
+    message: "Logging may expose sensitive data in production"
+    recommendation: "Sanitize logs, remove console statements in production builds"
+
+  - id: js-debugger-usage
+    name: Debugger Statement
+    description: Debugger statements should not be in production
+    severity: low
+    pattern: '\bdebugger\s*;?'
+    languages: [javascript, typescript]
+    message: "Debugger statement found - should be removed in production"
+    recommendation: "Use build tools to strip debugger statements"
+
+  - id: js-deprecated-api
+    name: Deprecated API Usage
+    description: Using deprecated APIs may have security implications
+    severity: low
+    pattern: '(unescape|escape|eval|with|caller|callee)\s*\('
+    languages: [javascript, typescript]
+    message: "Deprecated JavaScript API detected"
+    recommendation: "Replace with modern, secure alternatives"
+
+  - id: js-script-src-dynamic
+    name: Dynamic Script Source
+    description: Setting script.src dynamically can load external code
+    severity: low
+    pattern: 'script\.src\s*=\s*[^\'"]+'
+    languages: [javascript, typescript]
+    message: "Dynamic script source can load external, untrusted code"
+    recommendation: "Validate and whitelist allowed script sources"
