@@ -9,6 +9,9 @@
 
 A comprehensive security scanner for Claude Code skills to detect supply chain attack vectors, malicious code patterns, and potential backdoors.
 
+> **⚠️ Disclaimer / 声明:** This skill is currently **experimental** and provided as a proof-of-concept. While it implements various security checks, it may not catch all vulnerabilities or may produce false positives. **Contributions, optimizations, and improvements are highly welcome!** Please feel free to open issues or submit pull requests.
+> <br><br>**本技能目前为实验性质**，作为概念验证提供。虽然它实现了各种安全检查，但可能无法捕获所有漏洞或可能产生误报。**非常欢迎贡献、优化和完善！** 请随时提出问题或提交拉取请求。
+
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-green.svg)
 ![Security](https://img.shields.io/badge/Security-Audited-orange.svg)
