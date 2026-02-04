@@ -149,7 +149,7 @@ skill-security-audit/
 
 ### Security
 
-If you discover a security vulnerability within this project, please send an email to liuyang21cn@gmail.com. All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within this project, please send an email to yang.liu.fly@gmail.com. All security vulnerabilities will be promptly addressed.
 
 ### License
 
@@ -164,7 +164,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Contact
 
 - GitHub: [@liuyang21cn](https://github.com/liuyang21cn)
-- Email: liuyang21cn@gmail.com
+- Email: yang.liu.fly@gmail.com
 
 ---
 
