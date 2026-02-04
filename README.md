@@ -310,7 +310,7 @@ skill-security-audit/
 
 ### 安全
 
-如果您发现本项目中的安全漏洞，请发送邮件至 liuyang21cn@gmail.com。所有安全漏洞将及时得到处理。
+如果您发现本项目中的安全漏洞，请发送邮件至 yang.liu.fly@gmail.com。所有安全漏洞将及时得到处理。
 
 ### 许可证
 
@@ -325,7 +325,7 @@ skill-security-audit/
 ### 联系方式
 
 - GitHub: [@liuyang21cn](https://github.com/liuyang21cn)
-- 邮箱: liuyang21cn@gmail.com
+- 邮箱: yang.liu.fly@gmail.com
 
 ---
 
